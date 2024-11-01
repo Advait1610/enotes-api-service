@@ -34,10 +34,15 @@ public class CategoryServiceImpl implements CategoryService {
 //	    category.setDescription(categoryDto.getDescription());
 //	    category.setIsActive(categoryDto.getIsActive());
 		Category category = mapper.map(categoryDto, Category.class);
+		
+		if(ObjectUtils.isEmpty(category.getId())) {
+			category.setIsDeleted(false); // Assumes this is a field in your Category entity
+			category.setCreatedBy(1); // Set appropriate creator ID
+			category.setCreatedOn(new Date()); // Set the creation date			
+		}else {
+			updateCategory(category);
+		}
 	    
-	    category.setIsDeleted(false); // Assumes this is a field in your Category entity
-	    category.setCreatedBy(1); // Set appropriate creator ID
-	    category.setCreatedOn(new Date()); // Set the creation date
 	    
 	    // Save the entity to the repository
 	    Category saveCategory = categoryRepo.save(category);
@@ -46,6 +51,19 @@ public class CategoryServiceImpl implements CategoryService {
 	    }
 	    
 	    return true;
+	}
+
+	private void updateCategory(Category category) {
+		Optional<Category> findById = categoryRepo.findById(category.getId());
+		if(findById.isPresent()) {
+			Category existCategory = findById.get();
+			category.setCreatedBy(existCategory.getCreatedBy());
+			category.setCreatedOn(existCategory.getCreatedOn());
+			category.setIsDeleted(existCategory.getIsDeleted());
+			
+			category.setUpdatedBy(1);
+			category.setUpdatedOn(new Date());
+		}
 	}
 
 	@Override
