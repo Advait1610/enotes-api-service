@@ -16,6 +16,7 @@ import com.becoder.entity.Category;
 import com.becoder.exception.ResourceNotFoundException;
 import com.becoder.repository.CategoryRepository;
 import com.becoder.service.CategoryService;
+import com.becoder.util.Validation;
 
 @Service
 public class CategoryServiceImpl implements CategoryService {
@@ -27,8 +28,15 @@ public class CategoryServiceImpl implements CategoryService {
 	@Autowired
 	private ModelMapper mapper;
 	
+	
+	@Autowired
+	private Validation validation;
+	
 	@Override
 	public Boolean saveCategory(CategoryDto categoryDto) {
+		
+		//validation checking
+		validation.categoryValidation(categoryDto);
 		
 //		Category category = new Category();
 //	    category.setName(categoryDto.getName());
@@ -37,15 +45,14 @@ public class CategoryServiceImpl implements CategoryService {
 		Category category = mapper.map(categoryDto, Category.class);
 		
 		if(ObjectUtils.isEmpty(category.getId())) {
-			category.setIsDeleted(false); // Assumes this is a field in your Category entity
-			category.setCreatedBy(1); // Set appropriate creator ID
-			category.setCreatedOn(new Date()); // Set the creation date			
+			category.setIsDeleted(false); 
+			category.setCreatedBy(1); 
+			category.setCreatedOn(new Date()); 	
 		}else {
 			updateCategory(category);
 		}
 	    
 	    
-	    // Save the entity to the repository
 	    Category saveCategory = categoryRepo.save(category);
 	    if(ObjectUtils.isEmpty(saveCategory)) {
 	    	return false;
